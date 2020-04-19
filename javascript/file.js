@@ -1,14 +1,16 @@
-const csv = require('csv-parser');
+const csv = require('fast-csv');
 const fs = require('fs');
 
 class FileHandler {
   static readCsv(filename) {
     const data = [];
     const filepath = `./data/${filename}.csv`;
-    const stream = fs.createReadStream(filepath).pipe(csv());
     return new Promise((resolve, reject) => {
-      stream.on('data', (row) => data.push(row));
-      stream.on('end', () => resolve(data));
+      fs.createReadStream(filepath)
+          .pipe(csv.parse({headers: true}))
+          .on('data', row => data.push(row))
+          .on('error', err => reject(err))
+          .on('end', () => resolve(data));
     });
   }
 
@@ -24,18 +26,15 @@ class FileHandler {
   static writeCsv(filename, rows) {
     const filepath = `./out/${filename}.csv`;
     const writeStream = fs.createWriteStream(filepath);
-    let i = 0;
-    const headers = [];
+    const csvStream = csv.format({headers: true});
+    csvStream.pipe(writeStream);
+
     rows.forEach((row) => {
-      const values = [];
-      if (i === 0) {
-        Object.keys(row).forEach(c => headers.push(c));
-        writeStream.write(headers.join(',')+'\n');
-        i++;
-      }
-      Object.keys(row).forEach(c => values.push(row[c]));
-      writeStream.write(values.join(',')+'\n');
+        const values = [];
+        Object.keys(row).forEach(c => values.push(row[c]));
+        csvStream.write(row);
     });
+    csvStream.end();
     writeStream.on('finish', () => {
       console.log('updated in csv '+filename);
     });
