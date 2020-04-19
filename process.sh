@@ -3,13 +3,14 @@
 usage() {
   echo "
   Usage:
-  sh [ -l LANGUAGE ] [ -h help] process.sh
+  sh [ -l LANGUAGE ] process.sh
   languages that can be used
   1) js
   2) py
   3) go
   4) c
   5) php
+  6) ts
   " 1>&2
 }
 
@@ -26,7 +27,9 @@ case $LANGUAGE in
 "js")
   node javascript/process.js;;
 "py")
-  python3 python/process.py;;
+  python3 -m python.process;;
+"php")
+  php php/process.php;;
 *)
   echo "language is incorrect"
 esac

@@ -61,19 +61,19 @@ class WWE {
     wrestlers[wrestler][championship]++;
   }
 
-  evaluateSingleChampionship(row, wrestlers, template, championships) {
+  evaluateSingleChampionship(event, wrestlers, template, championships) {
     championships.forEach((championship) => {
-      const wrestler = row[championship];
-      if(row[championship]) {
+      const wrestler = event[championship];
+      if(event[championship]) {
         this.addChampionshipToWrestler(wrestlers, wrestler, template, championship);
       }
     });
   }
 
-  evaluateTagTeamChampionship(row, wrestlers, template, championships) {
+  evaluateTagTeamChampionship(event, wrestlers, template, championships) {
     championships.forEach((championship) => {
-      if(row[championship]) {
-        const x = row[championship].split('\/');
+      if(event[championship]) {
+        const x = event[championship].split('\/');
         const wrestler1 = x[0];
         const wrestler2 = x[1];
         this.addChampionshipToWrestler(wrestlers, wrestler1, template, championship);
@@ -82,7 +82,8 @@ class WWE {
     });
   }
 
-  evaluate(events) {
+  async evaluate() {
+    const events = await FileHandler.readCsv('events');
     const maleTemplate = Template.male(this.maleChampionships);
     const femaleTemplate = Template.female(this.femaleChampionships);
     Object.freeze(maleTemplate);
@@ -109,8 +110,7 @@ class WWE {
   }
 
   async process() {
-    const events = await FileHandler.readCsv('events');
-    this.evaluate(events);
+    await this.evaluate();
     this.calculatePoints();
 
     const maleWrestlersArr = this.getSortedArrFromObj(this.maleWrestlers, constants.maleFields);
