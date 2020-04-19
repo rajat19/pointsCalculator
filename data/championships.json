@@ -1,0 +1,35 @@
+{
+    "primary": [
+        "wwe universal",
+        "wwe",
+        "wwe world heavyweight",
+        "ecw world"
+    ],
+    "secondary": [
+        "wwe intercontinental",
+        "wwe united states",
+        "wwe hardcore",
+        "nxt"
+    ],
+    "tertiary": [
+        "wwe cruserweight",
+        "wwe united kingdom",
+        "wwe european",
+        "nxt north american"
+    ],
+    "tag_team": [
+        "wwe universal tag team", 
+        "wwe/wwe smackdown tag team", 
+        "wwe world/wwe raw tag team", 
+        "nxt tag team"
+    ],
+    "women": [
+        "wwe divas", 
+        "wwe raw women", 
+        "wwe smackdown women", 
+        "nxt women"
+    ],
+    "women_tag_team": [
+        "wwe women tag team"
+    ]
+}
