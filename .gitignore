@@ -1,8 +1,7 @@
 yarn.lock
 package-lock.json
-Icon
 .idea
 node_modules
 .DS_Store
-"Icon\r"
 garbage/
+Icon*
