@@ -40,6 +40,7 @@ class WWE {
       wrestler['tertiary'] = t;
       wrestler['tag_team'] = tt;
       wrestler['points'] = 3*p + 2*s + t + tt;
+      wrestler['total'] = p + s + t + tt;
     });
     Object.keys(this.femaleWrestlers).forEach((key) => {
       p = tt = 0;
@@ -49,6 +50,7 @@ class WWE {
       wrestler['primary'] = p;
       wrestler['tag_team'] = tt;
       wrestler['points'] = 2*p + tt;
+      wrestler['total'] = p + tt;
     });
   }
 
@@ -116,6 +118,8 @@ class WWE {
 
     FileHandler.writeCsv('male', maleWrestlersArr);
     FileHandler.writeCsv('female', femaleWrestlersArr);
+    FileHandler.writeJson('male', maleWrestlersArr);
+    FileHandler.writeJson('female', femaleWrestlersArr);
   }
 }
 
