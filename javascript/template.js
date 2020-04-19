@@ -1,24 +1,17 @@
 const constants = require('./constants');
-const FileHandler = require('./file');
-
-const championships = FileHandler.readJson('championships');
 
 class Template {
-  static male() {
+  static male(championships) {
     const obj = {};
     constants.maleFields.forEach(field => obj[field] = 0);
-    championships.primary.forEach(c => obj[c] = 0);
-    championships.secondary.forEach(c => obj[c] = 0);
-    championships.tertiary.forEach(c => obj[c] = 0);
-    championships.tag_team.forEach(c => obj[c] = 0);
+    championships.forEach(c => obj[c] = 0);
     return obj;
   }
 
-  static female() {
+  static female(championships) {
     const obj = {};
     constants.femaleFields.forEach(field => obj[field] = 0);
-    championships.women.forEach(c => obj[c] = 0);
-    championships.women_tag_team.forEach(c => obj[c] = 0);
+    championships.forEach(c => obj[c] = 0);
     return obj;
   }
 }

@@ -13,18 +13,24 @@ class WWE {
     this.tagTeamChampionships = championships.tag_team;
     this.womenChampionships = championships.women;
     this.womenTagTeamChampionships = championships.women_tag_team;
-    this.singleChampionships = [
-      this.primaryChampionships,
-      this.secondaryChampionships,
-      this.tertiaryChampionships,
-    ];
+    this.singleChampionships = []
+        .concat(this.primaryChampionships)
+        .concat(this.secondaryChampionships)
+        .concat(this.tertiaryChampionships);
+    this.maleChampionships = this.singleChampionships
+        .concat(this.tagTeamChampionships);
+    this.femaleChampionships = []
+        .concat(this.womenChampionships)
+        .concat(this.womenTagTeamChampionships);
+    this.maleWrestlers = {};
+    this.femaleWrestlers = {};
   }
 
-  calculatePoints(maleWrestlers, femaleWrestlers) {
+  calculatePoints() {
     let p, s, t, tt;
-    Object.keys(maleWrestlers).forEach((key) => {
+    Object.keys(this.maleWrestlers).forEach((key) => {
       p = s = t = tt = 0;
-      const wrestler = maleWrestlers[key];
+      const wrestler = this.maleWrestlers[key];
       this.primaryChampionships.forEach(c => p+=wrestler[c]);
       this.secondaryChampionships.forEach(c => s+=wrestler[c]);
       this.tertiaryChampionships.forEach(c => t+=wrestler[c]);
@@ -35,9 +41,9 @@ class WWE {
       wrestler['tag_team'] = tt;
       wrestler['points'] = 3*p + 2*s + t + tt;
     });
-    Object.keys(femaleWrestlers).forEach((key) => {
+    Object.keys(this.femaleWrestlers).forEach((key) => {
       p = tt = 0;
-      const wrestler = femaleWrestlers[key];
+      const wrestler = this.femaleWrestlers[key];
       this.womenChampionships.forEach(c => p+=wrestler[c]);
       this.womenTagTeamChampionships.forEach(c => tt+=wrestler[c]);
       wrestler['primary'] = p;
@@ -46,59 +52,45 @@ class WWE {
     });
   }
 
-  evaluate(events, maleWrestlers, femaleWrestlers) {
+  addChampionshipToWrestler(wrestlers, wrestler, template, championship) {
+    if (!wrestlers.hasOwnProperty(wrestler)) {
+      wrestlers[wrestler] = Object.assign({}, template);
+    }
+    wrestlers[wrestler][championship]++;
+  }
+
+  evaluateSingleChampionship(row, wrestlers, template, championships) {
+    championships.forEach((championship) => {
+      const wrestler = row[championship];
+      if(row[championship]) {
+        this.addChampionshipToWrestler(wrestlers, wrestler, template, championship);
+      }
+    });
+  }
+
+  evaluateTagTeamChampionship(row, wrestlers, template, championships) {
+    championships.forEach((championship) => {
+      if(row[championship]) {
+        const x = row[championship].split('\/');
+        const wrestler1 = x[0];
+        const wrestler2 = x[1];
+        this.addChampionshipToWrestler(wrestlers, wrestler1, template, championship);
+        this.addChampionshipToWrestler(wrestlers, wrestler2, template, championship);
+      }
+    });
+  }
+
+  evaluate(events) {
+    const maleTemplate = Template.male(this.maleChampionships);
+    const femaleTemplate = Template.female(this.femaleChampionships);
+    Object.freeze(maleTemplate);
+    Object.freeze(femaleTemplate);
     events.forEach((row) => {
       console.log(`Evaluating event: ${row.Event}`);
-      this.singleChampionships.forEach((championshipType) => {
-        championshipType.forEach((championship) => {
-          const wrestler = row[championship];
-          if(row[championship]) {
-            if (!maleWrestlers.hasOwnProperty(wrestler)) {
-              maleWrestlers[wrestler] = Template.male();
-            }
-            maleWrestlers[wrestler][championship]++;
-          }
-        })
-      });
-      this.womenChampionships.forEach((championship) => {
-        const wrestler = row[championship];
-        if (row[championship]) {
-          if (!femaleWrestlers.hasOwnProperty(wrestler)) {
-            femaleWrestlers[wrestler] = Template.female();
-          }
-          femaleWrestlers[wrestler][championship]++;
-        }
-      });
-      this.tagTeamChampionships.forEach((championship) => {
-        if(row[championship]) {
-          const x = row[championship].split('\/');
-          const wrestler1 = x[0];
-          const wrestler2 = x[1];
-          if (!maleWrestlers.hasOwnProperty(wrestler1)) {
-            maleWrestlers[wrestler1] = Template.male();
-          }
-          if (!maleWrestlers.hasOwnProperty(wrestler2)) {
-            maleWrestlers[wrestler2] = Template.male();
-          }
-          maleWrestlers[wrestler1][championship]++;
-          maleWrestlers[wrestler2][championship]++;
-        }
-      });
-      this.womenTagTeamChampionships.forEach((championship) => {
-        if(row[championship]) {
-          const x = row[championship].split('\/');
-          const wrestler1 = x[0];
-          const wrestler2 = x[1];
-          if (!femaleWrestlers.hasOwnProperty(wrestler1)) {
-            femaleWrestlers[wrestler1] = Template.female();
-          }
-          if (!femaleWrestlers.hasOwnProperty(wrestler2)) {
-            femaleWrestlers[wrestler2] = Template.female();
-          }
-          femaleWrestlers[wrestler1][championship]++;
-          femaleWrestlers[wrestler2][championship]++;
-        }
-      });
+      this.evaluateSingleChampionship(row, this.maleWrestlers, maleTemplate, this.singleChampionships);
+      this.evaluateSingleChampionship(row, this.femaleWrestlers, femaleTemplate, this.womenChampionships);
+      this.evaluateTagTeamChampionship(row, this.maleWrestlers, maleTemplate, this.tagTeamChampionships);
+      this.evaluateTagTeamChampionship(row, this.femaleWrestlers, femaleTemplate, this.womenTagTeamChampionships);
     });
   }
 
@@ -116,13 +108,11 @@ class WWE {
 
   async process() {
     const events = await FileHandler.readCsv('events');
-    const maleWrestlers = {};
-    const femaleWrestlers = {};
-    this.evaluate(events, maleWrestlers, femaleWrestlers);
-    this.calculatePoints(maleWrestlers, femaleWrestlers);
+    this.evaluate(events);
+    this.calculatePoints();
 
-    const maleWrestlersArr = this.getSortedArrFromObj(maleWrestlers, constants.maleFields);
-    const femaleWrestlersArr = this.getSortedArrFromObj(femaleWrestlers, constants.femaleFields);
+    const maleWrestlersArr = this.getSortedArrFromObj(this.maleWrestlers, constants.maleFields);
+    const femaleWrestlersArr = this.getSortedArrFromObj(this.femaleWrestlers, constants.femaleFields);
 
     FileHandler.writeCsv('male', maleWrestlersArr);
     FileHandler.writeCsv('female', femaleWrestlersArr);
