@@ -4,7 +4,7 @@ const constants = require('./constants');
 const FileHandler = require('./file');
 const Template = require('./template');
 
-class WWE {
+class Process {
   constructor() {
     const championships = FileHandler.readJson('championships');
     this.primaryChampionships = championships.primary;
@@ -14,14 +14,14 @@ class WWE {
     this.womenChampionships = championships.women;
     this.womenTagTeamChampionships = championships.women_tag_team;
     this.singleChampionships = []
-        .concat(this.primaryChampionships)
-        .concat(this.secondaryChampionships)
-        .concat(this.tertiaryChampionships);
+      .concat(this.primaryChampionships)
+      .concat(this.secondaryChampionships)
+      .concat(this.tertiaryChampionships);
     this.maleChampionships = this.singleChampionships
-        .concat(this.tagTeamChampionships);
+      .concat(this.tagTeamChampionships);
     this.femaleChampionships = []
-        .concat(this.womenChampionships)
-        .concat(this.womenTagTeamChampionships);
+      .concat(this.womenChampionships)
+      .concat(this.womenTagTeamChampionships);
     this.maleWrestlers = {};
     this.femaleWrestlers = {};
   }
@@ -55,7 +55,7 @@ class WWE {
   }
 
   addChampionshipToWrestler(wrestlers, wrestler, template, championship) {
-    if (!wrestlers.hasOwnProperty(wrestler)) {
+    if (!Object.prototype.hasOwnProperty.call(wrestlers, wrestler)) {
       wrestlers[wrestler] = Object.assign({}, template);
     }
     wrestlers[wrestler][championship]++;
@@ -73,7 +73,7 @@ class WWE {
   evaluateTagTeamChampionship(event, wrestlers, template, championships) {
     championships.forEach((championship) => {
       if(event[championship]) {
-        const x = event[championship].split('\/');
+        const x = event[championship].split('/');
         const wrestler1 = x[0];
         const wrestler2 = x[1];
         this.addChampionshipToWrestler(wrestlers, wrestler1, template, championship);
@@ -109,7 +109,7 @@ class WWE {
     return _.orderBy(wrestlerArr, sortBy, order);
   }
 
-  async process() {
+  async main() {
     await this.evaluate();
     this.calculatePoints();
 
@@ -123,9 +123,7 @@ class WWE {
   }
 }
 
-module.exports = WWE;
-
 (function () {
-  const wwe = new WWE();
-  wwe.process().then(() => console.log('done'));
+  const process = new Process();
+  process.main().then(() => console.log('done'));
 })();

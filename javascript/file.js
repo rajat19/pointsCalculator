@@ -7,10 +7,10 @@ class FileHandler {
     const filepath = `./data/${filename}.csv`;
     return new Promise((resolve, reject) => {
       fs.createReadStream(filepath)
-          .pipe(csv.parse({headers: true}))
-          .on('data', row => data.push(row))
-          .on('error', err => reject(err))
-          .on('end', () => resolve(data));
+        .pipe(csv.parse({headers: true}))
+        .on('data', row => data.push(row))
+        .on('error', err => reject(err))
+        .on('end', () => resolve(data));
     });
   }
 
@@ -30,9 +30,9 @@ class FileHandler {
     csvStream.pipe(writeStream);
 
     rows.forEach((row) => {
-        const values = [];
-        Object.keys(row).forEach(c => values.push(row[c]));
-        csvStream.write(row);
+      const values = [];
+      Object.keys(row).forEach(c => values.push(row[c]));
+      csvStream.write(row);
     });
     csvStream.end();
     writeStream.on('finish', () => {
